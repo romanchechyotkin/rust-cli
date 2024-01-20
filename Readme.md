@@ -1,3 +1,3 @@
 # grep like cli
 
-cargo run -- <pattern> <file>
+cargo run -- "<pattern>" "<file>"
