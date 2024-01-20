@@ -1,23 +1,29 @@
 use std::env;
-use std::path;
+use std::fs;
+ 
+mod config; 
 
-struct Cli {
-    pattern: String,
-    path: path::PathBuf,
-}
-
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let env_args: Vec<String> = env::args().collect();
 
-    let pattern = env_args.get(1).expect("provide pattern");
-    let path = env_args.get(2).expect("provide path");
+    let cfg = config::Config::new(&env_args);
+    println!("pattern={:?}; path={:?};", cfg.pattern, cfg.path);
 
-    println!("pattern={:?}; path={:?};", pattern, path);
-
-    let args = Cli {
-        pattern: pattern.to_string(),
-        path: path::PathBuf::from(path),
+    let result = fs::read_to_string(cfg.path);
+    let content = match result {
+        Ok(content) => content,
+        Err(error) => {
+            return Err(error.into());
+        }
     };
 
-    println!("pattern={:?}; path={:?};", args.pattern, args.path);
+    let mut counter = 0;
+    for line in content.lines() {
+        if line.contains(&cfg.pattern) {
+            counter += 1;
+            println!("{counter}. {line}");
+        }
+    }
+
+    Ok(())
 }
